@@ -1,0 +1,33 @@
+name: static_soccer
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^0.5.12+4
+  video_player: ^1.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/freekick/1_SelectPlayer/
+    - assets/freekick/2_Result/
+    - assets/cross/1_SelectPlayer/
+    - assets/cross/2_Result/
+    - assets/shoot/1_SelectPlayer/
+    - assets/shoot/2_Result/
