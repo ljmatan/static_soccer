@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:static_soccer/views/match/bloc/gameplay_controller.dart';
 import 'package:static_soccer/views/match/bloc/score_controller.dart';
 import 'package:static_soccer/views/match/bloc/timer_controller.dart';
+import 'package:static_soccer/views/match/shot_display/bloc/display_controller.dart';
 import 'package:static_soccer/views/match/shot_display/button_row.dart';
+import 'package:static_soccer/views/match/shot_display/display_widget.dart';
 import 'package:static_soccer/views/match/shot_display/player_name_display.dart';
 import 'package:static_soccer/views/match/shot_display/timer.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoDisplay extends StatefulWidget {
-  final List<VideoPlayerController> playerList;
+  final List<VideoPlayerController> playerControllers;
   final VideoPlayerController shotController;
-  final Function dispose;
   final bool requiresInput;
 
   VideoDisplay({
-    @required this.playerList,
+    @required this.playerControllers,
     @required this.shotController,
-    @required this.dispose,
     @required this.requiresInput,
   });
 
@@ -41,26 +41,30 @@ class _VideoDisplayState extends State<VideoDisplay>
   void initState() {
     super.initState();
 
+    DisplayController.init();
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..addListener(() => setState(() {}));
     _scale = Tween<double>(begin: 0.1, end: 1).animate(_animationController);
 
-    _videoController = widget.playerList.first;
+    _videoController = widget.playerControllers.first;
 
     _animationController.forward();
   }
 
   Future<void> _setVideos(int i) async {
     // Set new controller according to the user choice
-    setState(() => _videoController = widget.playerList[i]);
+    _videoController = widget.playerControllers[i];
+    if (i != 0) DisplayController.change(i);
     // Play the video (note: await doesn't wait for the video to finish)
     await _videoController.play();
     // Wait until the video had stopped playing
     await Future.delayed(_videoController.value.duration, () async {
       // Continue with the random shot video
-      setState(() => _videoController = widget.shotController);
+      _videoController = widget.shotController;
+      DisplayController.change(3);
       if (_videoController.dataSource.endsWith('Goal1.mp4') ||
           _videoController.dataSource.endsWith('Goal2.mp4'))
         ScoreController.hit(
@@ -93,14 +97,29 @@ class _VideoDisplayState extends State<VideoDisplay>
           opacity: _animationController.value,
           child: Transform.scale(
             scale: _scale.value,
-            child: SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _videoController.value.size?.width ?? 0,
-                  height: _videoController.value.size?.height ?? 0,
-                  child: VideoPlayer(_videoController),
-                ),
+            child: StreamBuilder(
+              stream: DisplayController.stream,
+              initialData: 0,
+              builder: (context, index) => Stack(
+                children: [
+                  if (index.data != 3)
+                    DisplayWidget(
+                      displayed: index.data == 0,
+                      controller: widget.playerControllers[0],
+                    ),
+                  if (index.data != 3)
+                    DisplayWidget(
+                      displayed: index.data == 1,
+                      controller: widget.playerControllers[1],
+                    ),
+                  if (index.data != 3)
+                    DisplayWidget(
+                      displayed: index.data == 2,
+                      controller: widget.playerControllers[2],
+                    ),
+                  if (index.data == 3)
+                    DisplayWidget(controller: widget.shotController),
+                ],
               ),
             ),
           ),
@@ -118,7 +137,7 @@ class _VideoDisplayState extends State<VideoDisplay>
                 visible: visible.data,
                 short: !widget.requiresInput,
                 playerNames: [
-                  for (var controller in widget.playerList)
+                  for (var controller in widget.playerControllers)
                     controller.dataSource.split('_').last.split('.').first,
                 ],
                 showPlayerName: _showPlayerName,
@@ -142,7 +161,7 @@ class _VideoDisplayState extends State<VideoDisplay>
             child: ButtonRow(
               setVideo: _setVideos,
               names: [
-                for (var controller in widget.playerList)
+                for (var controller in widget.playerControllers)
                   controller.dataSource.split('_').last.split('.').first,
               ],
               hideTimer: _hideTimer,
@@ -159,7 +178,8 @@ class _VideoDisplayState extends State<VideoDisplay>
     _animationController.dispose();
     _timerController.close();
     _playerNameController.close();
-    widget.dispose();
+    DisplayController.dispose();
+    widget.playerControllers.first.dispose();
     super.dispose();
   }
 }

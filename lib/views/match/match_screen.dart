@@ -77,13 +77,6 @@ class _MatchScreenState extends State<MatchScreen> {
     await _controller4.initialize();
   }
 
-  void _disposeControllers() {
-    _controller1.dispose();
-    _controller2.dispose();
-    _controller3.dispose();
-    _controller4.dispose();
-  }
-
   bool _requiresInput;
   void _setInput(bool value) => _requiresInput = value;
 
@@ -108,13 +101,12 @@ class _MatchScreenState extends State<MatchScreen> {
               initialData: false,
               builder: (context, displayed) => displayed.data
                   ? VideoDisplay(
-                      playerList: [
+                      playerControllers: [
                         _controller1,
                         _controller2,
                         _controller3,
                       ],
                       shotController: _controller4,
-                      dispose: _disposeControllers,
                       requiresInput: _requiresInput,
                     )
                   : const SizedBox(),

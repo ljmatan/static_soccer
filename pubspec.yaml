@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^0.5.12+4
-  video_player: ^1.0.1
+  video_player: ^2.0.0-nullsafety.7
 
 dev_dependencies:
   flutter_test:
