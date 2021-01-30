@@ -9,6 +9,7 @@ import 'package:static_soccer/views/match/continue_button.dart';
 import 'package:static_soccer/views/match/info_bar/info_bar.dart';
 import 'package:static_soccer/views/match/info_bar/timer/bloc/time_controller.dart';
 import 'package:static_soccer/views/match/info_bar/timer/timer_display.dart';
+import 'package:static_soccer/views/match/score_display.dart';
 import 'package:static_soccer/views/match/scores/scores_display.dart';
 import 'package:static_soccer/views/match/shot_display/shot_display.dart';
 import 'package:static_soccer/views/match/status_reports/bloc/report_model.dart';
@@ -32,6 +33,20 @@ class _MatchScreenState extends State<MatchScreen> {
   Set<int> _redTeamShots = {};
   Set<int> _blueTeamShots = {};
 
+  void _setShots(Set<int> current, Set<int> opponent) {
+    while (current.length < widget.shots.redTeamShots) {
+      final int minute = 2 + Random().nextInt(86);
+      bool acceptable = true;
+      for (var shot in current)
+        if (minute - 1 == shot ||
+            minute + 1 == shot ||
+            minute - 2 == shot ||
+            minute + 2 == shot) acceptable = false;
+      for (var shot in opponent) if (minute == shot) acceptable = false;
+      if (acceptable) current.add(minute);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,28 +54,8 @@ class _MatchScreenState extends State<MatchScreen> {
     MatchTimeController.init();
     ScoreController.init();
     ReportsController.init();
-    while (_redTeamShots.length < widget.shots.redTeamShots) {
-      final int minute = 2 + Random().nextInt(86);
-      bool acceptable = true;
-      for (var shot in _redTeamShots)
-        if (minute - 1 == shot ||
-            minute + 1 == shot ||
-            minute - 2 == shot ||
-            minute + 2 == shot) acceptable = false;
-      for (var shot in _blueTeamShots) if (minute == shot) acceptable = false;
-      if (acceptable) _redTeamShots.add(minute);
-    }
-    while (_blueTeamShots.length < widget.shots.blueTeamShots) {
-      final int minute = 2 + Random().nextInt(86);
-      bool acceptable = true;
-      for (var shot in _blueTeamShots)
-        if (minute - 1 == shot ||
-            minute + 1 == shot ||
-            minute - 2 == shot ||
-            minute + 2 == shot) acceptable = false;
-      for (var shot in _redTeamShots) if (minute == shot) acceptable = false;
-      if (acceptable) _blueTeamShots.add(minute);
-    }
+    _setShots(_redTeamShots, _blueTeamShots);
+    _setShots(_blueTeamShots, _redTeamShots);
     WidgetsBinding.instance.addPostFrameCallback((_) =>
         _timerKey.currentState.setShotsNumber(_redTeamShots, _blueTeamShots));
   }
@@ -116,32 +111,7 @@ class _MatchScreenState extends State<MatchScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Scores(blue: true),
-                                Expanded(
-                                  flex: 3,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: StreamBuilder(
-                                      stream: ScoreController.stream,
-                                      initialData: {'red': 0, 'blue': 0},
-                                      builder: (context, score) => Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            score.data['blue'].toString() +
-                                                ' - ' +
-                                                score.data['red'].toString(),
-                                            style: const TextStyle(
-                                              fontSize: 40,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                ScoreDisplay(),
                                 Scores(blue: false),
                               ],
                             ),
