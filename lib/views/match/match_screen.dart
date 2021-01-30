@@ -1,16 +1,22 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:static_soccer/global/values.dart' as global;
 import 'package:static_soccer/logic/matchmaking/matchmaking.dart';
 import 'package:static_soccer/views/match/bloc/gameplay_controller.dart';
 import 'package:static_soccer/views/match/bloc/score_controller.dart';
+import 'package:static_soccer/views/match/bloc/timer_controller.dart';
 import 'package:static_soccer/views/match/continue_button.dart';
 import 'package:static_soccer/views/match/info_bar/info_bar.dart';
-import 'package:static_soccer/views/match/info_bar/timer/time_controller.dart';
-import 'package:static_soccer/views/match/info_bar/timer/timer.dart';
+import 'package:static_soccer/views/match/info_bar/timer/bloc/time_controller.dart';
+import 'package:static_soccer/views/match/info_bar/timer/timer_display.dart';
+import 'package:static_soccer/views/match/scores/bloc/blue_scores_controller.dart';
+import 'package:static_soccer/views/match/scores/bloc/red_scores_controller.dart';
+import 'package:static_soccer/views/match/scores/scores_display.dart';
 import 'package:static_soccer/views/match/shot_display/shot_display.dart';
-import 'package:video_player/video_player.dart';
+import 'package:static_soccer/views/match/status_reports/bloc/report_model.dart';
+import 'package:static_soccer/views/match/status_reports/bloc/reports_controller.dart';
+import 'package:static_soccer/views/match/status_reports/reports_display.dart';
 
 class MatchScreen extends StatefulWidget {
   final Shots shots;
@@ -33,13 +39,17 @@ class _MatchScreenState extends State<MatchScreen> {
   void initState() {
     super.initState();
     GameplayController.init();
-    TimeController.init();
+    MatchTimeController.init();
     ScoreController.init();
+    ReportsController.init();
     while (_redTeamShots.length < widget.shots.redTeamShots) {
       final int minute = 2 + Random().nextInt(86);
       bool acceptable = true;
       for (var shot in _redTeamShots)
-        if (minute - 1 == shot || minute + 1 == shot) acceptable = false;
+        if (minute - 1 == shot ||
+            minute + 1 == shot ||
+            minute - 2 == shot ||
+            minute + 2 == shot) acceptable = false;
       for (var shot in _blueTeamShots) if (minute == shot) acceptable = false;
       if (acceptable) _redTeamShots.add(minute);
     }
@@ -47,7 +57,10 @@ class _MatchScreenState extends State<MatchScreen> {
       final int minute = 2 + Random().nextInt(86);
       bool acceptable = true;
       for (var shot in _blueTeamShots)
-        if (minute - 1 == shot || minute + 1 == shot) acceptable = false;
+        if (minute - 1 == shot ||
+            minute + 1 == shot ||
+            minute - 2 == shot ||
+            minute + 2 == shot) acceptable = false;
       for (var shot in _redTeamShots) if (minute == shot) acceptable = false;
       if (acceptable) _blueTeamShots.add(minute);
     }
@@ -55,30 +68,28 @@ class _MatchScreenState extends State<MatchScreen> {
         _timerKey.currentState.setShotsNumber(_redTeamShots, _blueTeamShots));
   }
 
-  VideoPlayerController _controller1;
-  VideoPlayerController _controller2;
-  VideoPlayerController _controller3;
-  VideoPlayerController _controller4;
-
-  // Assign video values to their respective controllers
-  Future<void> _setControllers(
-    String video1,
-    String video2,
-    String video3,
-    String video4,
-  ) async {
-    _controller1 = VideoPlayerController.asset(video1);
-    _controller2 = VideoPlayerController.asset(video2);
-    _controller3 = VideoPlayerController.asset(video3);
-    _controller4 = VideoPlayerController.asset(video4);
-    await _controller1.initialize();
-    await _controller2.initialize();
-    await _controller3.initialize();
-    await _controller4.initialize();
-  }
-
   bool _requiresInput;
-  void _setInput(bool value) => _requiresInput = value;
+  String _mode, _color, _thumbnail;
+
+  void _setInput(bool value) {
+    _requiresInput = value;
+    _color = value ? 'Blue' : 'Red';
+    _mode = global.Values.modes.elementAt(Random().nextInt(6));
+
+    _thumbnail = 'assets/$_mode/${_color}_thumbnail.png';
+    GameplayController.change(true);
+
+    Future.delayed(
+      const Duration(seconds: 1),
+      () => ReportsController.add(
+        StatusReport(
+          _mode,
+          _color,
+          _timerKey.currentState.currentTimeInMins,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,43 +97,103 @@ class _MatchScreenState extends State<MatchScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-            Column(
-              children: [
-                InfoBar(
-                  _timerKey,
-                  setControllers: _setControllers,
-                  setInput: _setInput,
-                ),
-              ],
+            Image.asset(
+              'assets/ui/bg.png',
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.cover,
             ),
-            ContinueButton(),
+            Positioned.fill(
+              child: Column(
+                children: [
+                  InfoBar(_timerKey, setInput: _setInput),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height / 3,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Scores(blue: true),
+                                Expanded(
+                                  flex: 3,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: StreamBuilder(
+                                      stream: ScoreController.stream,
+                                      initialData: {'red': 0, 'blue': 0},
+                                      builder: (context, score) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            score.data['blue'].toString() +
+                                                ' - ' +
+                                                score.data['red'].toString(),
+                                            style: const TextStyle(
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Scores(blue: false),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: StatusReports(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: 0,
+              bottom: 0,
+              right: 0,
+              child: ContinueButton(),
+            ),
             StreamBuilder(
               stream: GameplayController.stream,
               initialData: false,
               builder: (context, displayed) => displayed.data
                   ? VideoDisplay(
-                      playerControllers: [
-                        _controller1,
-                        _controller2,
-                        _controller3,
-                      ],
-                      shotController: _controller4,
                       requiresInput: _requiresInput,
+                      mode: _mode,
+                      color: _color,
+                      thumbnail: _thumbnail,
+                      currentTime: _timerKey.currentState.currentTimeInMins,
                     )
                   : const SizedBox(),
-            )
+            ),
           ],
         ),
       ),
-      onWillPop: () async => _timerKey.currentState.minutesLeft == 0,
+      onWillPop: () async => _timerKey.currentState.currentTimeInMins == 0,
     );
   }
 
   @override
   void dispose() {
     GameplayController.dispose();
-    TimeController.dispose();
+    MatchTimeController.dispose();
     ScoreController.dispose();
+    ReportsController.dispose();
     super.dispose();
   }
 }

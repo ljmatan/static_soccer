@@ -27,7 +27,7 @@ class _AnimatedTimeState extends State<AnimatedTime>
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed)
           _animationController.reverse().whenComplete(() {
-            if (widget.minutes != 0) _animationController.forward();
+            if (widget.minutes != 90) _animationController.forward();
           });
       });
     _opacity = Tween<double>(begin: 1, end: 0).animate(_animationController);
@@ -40,23 +40,12 @@ class _AnimatedTimeState extends State<AnimatedTime>
         !_animationController.isAnimating) _animationController.forward();
     return Opacity(
       opacity: _opacity.value,
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: const TextStyle(color: Colors.black),
-          children: [
-            TextSpan(
-              text: '${widget.minutes}\n',
-              style: const TextStyle(fontSize: 20),
-            ),
-            TextSpan(
-              text: 'mins',
-              style: const TextStyle(
-                fontWeight: FontWeight.w300,
-                fontSize: 12,
-              ),
-            ),
-          ],
+      child: Text(
+        '${widget.minutes}\'',
+        style: const TextStyle(
+          fontSize: 18,
+          color: Color(0xff00A8FF),
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:static_soccer/views/match/shot_display/bloc/player_name_controller.dart';
 
 class PlayerButton extends StatefulWidget {
-  final Function(int) setVideo;
+  final Function(BuildContext, int) setControllers;
   final Function hideTimer, hideButtons;
   final String name;
   final int index;
@@ -11,7 +12,7 @@ class PlayerButton extends StatefulWidget {
 
   PlayerButton({
     Key key,
-    @required this.setVideo,
+    @required this.setControllers,
     @required this.hideTimer,
     @required this.hideButtons,
     @required this.name,
@@ -55,8 +56,19 @@ class _PlayerButtonState extends State<PlayerButton>
     _scaleController.forward();
   }
 
-  void keepButton() {
-    _offsetController.forward();
+  bool _tapEnabled = true;
+
+  Future<void> keepButton() async {
+    _tapEnabled = false;
+    await _offsetController.forward();
+    Future.delayed(
+      const Duration(seconds: 1),
+      () => _offsetController.reverse(),
+    );
+  }
+
+  void hideButton() {
+    _tapEnabled = false;
     Future.delayed(
       const Duration(seconds: 1),
       () => _offsetController.reverse(),
@@ -89,13 +101,16 @@ class _PlayerButtonState extends State<PlayerButton>
               ),
             ),
           ),
-          onTap: () {
-            widget.hideButtons();
-            keepButton();
-            widget.setVideo(widget.index);
-            widget.hideTimer();
-            widget.showPlayerName(widget.name);
-          },
+          onTap: _tapEnabled
+              ? () async {
+                  _tapEnabled = false;
+                  widget.hideTimer();
+                  widget.hideButtons();
+                  _offsetController.forward();
+                  await widget.setControllers(context, widget.index);
+                  widget.showPlayerName(widget.name);
+                }
+              : null,
         ),
       ),
     );
@@ -110,18 +125,16 @@ class _PlayerButtonState extends State<PlayerButton>
 }
 
 class ButtonRow extends StatefulWidget {
-  final Function(int) setVideo;
+  final Function(BuildContext, int) setControllers;
   final List<String> names;
   final Function hideTimer;
   final Function(String) showPlayerName;
-  final Stream nameStream;
 
   ButtonRow({
-    @required this.setVideo,
+    @required this.setControllers,
     @required this.names,
     @required this.hideTimer,
     @required this.showPlayerName,
-    @required this.nameStream,
   });
 
   @override
@@ -157,8 +170,12 @@ class _ButtonRowState extends State<ButtonRow>
       const Duration(seconds: 5),
       () => _offsetController.forward(),
     );
-    _nameSubscription = widget.nameStream.listen(
-        (name) => _keys[widget.names.indexOf(name)].currentState.keepButton());
+    _nameSubscription = PlayerNameController.stream.listen((name) =>
+        name.startsWith('KEEP')
+            ? _keys[widget.names.indexOf(name.substring(4))]
+                .currentState
+                .keepButton()
+            : _keys[widget.names.indexOf(name)].currentState.hideButton());
   }
 
   @override
@@ -172,7 +189,7 @@ class _ButtonRowState extends State<ButtonRow>
             PlayerButton(
               key: _keys[i],
               index: i,
-              setVideo: widget.setVideo,
+              setControllers: widget.setControllers,
               hideTimer: widget.hideTimer,
               hideButtons: _offsetController.forward,
               name: widget.names[i],

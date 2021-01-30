@@ -40,11 +40,14 @@ class _KickDialogState extends State<KickDialog> {
               width: MediaQuery.of(context).size.width,
               height: 48,
               child: Center(
-                child: Text(
-                  widget.label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    widget.label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
