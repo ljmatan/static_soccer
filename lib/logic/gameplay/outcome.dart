@@ -85,7 +85,7 @@ abstract class Outcome {
           await displayController.reverse();
           GameplayController.change(false);
           // Start running timer again
-          TimerController.change(0);
+          TimerActivityController.change(0);
           // Dispose of controllers. Placing this code into the widget dispose function
           // results in an exception.
           playerController.dispose();

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class ReportEntry extends StatelessWidget {
-  final String type, team;
+  final String type, color;
   final int minutes, index;
 
   ReportEntry({
     @required this.type,
-    @required this.team,
+    @required this.color,
     @required this.minutes,
     @required this.index,
   });
@@ -27,12 +27,12 @@ class ReportEntry extends StatelessWidget {
                 children: [
                   Image.asset(
                     'assets/ui/notification.png',
-                    height: 96,
                     width: MediaQuery.of(context).size.width,
+                    height: 96,
                     fit: BoxFit.fill,
                   ),
                   Text(
-                    '$type kick for $team Team',
+                    '$type kick for $color Team',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color(0xff0270be),
@@ -55,7 +55,7 @@ class ReportEntry extends StatelessWidget {
                     width: MediaQuery.of(context).size.width,
                     child: Center(
                       child: Image.asset(
-                        'assets/ui/${team}_progress.png',
+                        'assets/ui/${color}_progress.png',
                         width: 40,
                         height: 40,
                       ),

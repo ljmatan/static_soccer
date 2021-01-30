@@ -23,7 +23,7 @@ class _StatusReportsState extends State<StatusReports> {
               padding: const EdgeInsets.only(bottom: 12),
               child: ReportEntry(
                 type: reports.data.reversed.toList()[i].type,
-                team: reports.data.reversed.toList()[i].team,
+                color: reports.data.reversed.toList()[i].team,
                 minutes: reports.data.reversed.toList()[i].minutes,
                 index: i,
               ),

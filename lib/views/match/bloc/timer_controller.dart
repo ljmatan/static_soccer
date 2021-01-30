@@ -1,6 +1,6 @@
 import 'dart:async';
 
-abstract class TimerController {
+abstract class TimerActivityController {
   static StreamController _streamController;
 
   static void init() => _streamController = StreamController.broadcast();

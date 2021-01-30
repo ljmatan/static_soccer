@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:static_soccer/views/match/bloc/timer_controller.dart';
 import 'package:static_soccer/views/match/info_bar/name_and_strength/name_and_strength.dart';
 import 'package:static_soccer/views/match/info_bar/timer/bloc/time_controller.dart';
 import 'package:static_soccer/views/match/info_bar/timer/timer_display.dart';
@@ -20,7 +19,7 @@ class InfoBar extends StatelessWidget {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              const SizedBox(height: 70),
+              const SizedBox(height: 76),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

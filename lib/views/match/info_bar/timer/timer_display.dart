@@ -76,8 +76,8 @@ class MatchTimerState extends State<MatchTimer> {
   void initState() {
     super.initState();
     _setTimer();
-    TimerController.init();
-    _timerSubscription = TimerController.stream.listen(
+    TimerActivityController.init();
+    _timerSubscription = TimerActivityController.stream.listen(
       (shotStart) => _setTimer(),
     );
   }
@@ -94,7 +94,7 @@ class MatchTimerState extends State<MatchTimer> {
   @override
   void dispose() {
     _timerSubscription.cancel();
-    TimerController.dispose();
+    TimerActivityController.dispose();
     _timer?.cancel();
     super.dispose();
   }
