@@ -4,7 +4,6 @@ import 'package:static_soccer/views/match/scores/bloc/score_model.dart';
 
 abstract class RedScoresController {
   static List<Score> _scores;
-  static List<Score> get scores => _scores;
 
   static StreamController _streamController;
 

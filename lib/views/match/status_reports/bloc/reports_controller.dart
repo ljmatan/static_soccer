@@ -4,7 +4,6 @@ import 'package:static_soccer/views/match/status_reports/bloc/report_model.dart'
 
 abstract class ReportsController {
   static List<StatusReport> _list;
-  static List<StatusReport> get list => _list;
 
   static StreamController<List<StatusReport>> _streamController;
 

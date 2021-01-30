@@ -19,50 +19,52 @@ class InfoBar extends StatelessWidget {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              const SizedBox(height: 76),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 4,
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset('assets/ui/cup.png', height: 26),
-                              Text(
-                                '1613',
-                                style: const TextStyle(
-                                  color: Color(0xfff3bd15),
-                                  fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 4,
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset('assets/ui/cup.png', height: 26),
+                                Text(
+                                  '1613',
+                                  style: const TextStyle(
+                                    color: Color(0xfff3bd15),
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 4,
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset('assets/ui/cup.png', height: 26),
-                              Text(
-                                '1864',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xfff3bd15),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 4,
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset('assets/ui/cup.png', height: 26),
+                                Text(
+                                  '1864',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xfff3bd15),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Stack(
                     fit: StackFit.passthrough,
